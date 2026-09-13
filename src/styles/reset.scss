@@ -1,0 +1,80 @@
+/* 1. Wrap the entire reset in a cascade layer to give it lowest specificity */
+@layer reset {
+  /* 2. Global Box-sizing & Image repeats */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    background-repeat: no-repeat; /* Stops accidental tiled images */
+  }
+
+  /* 3. Smooth scrolling and viewport height setups */
+  html {
+    /* Prevent mobile browsers from auto-adjusting font-sizes */
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+
+    /* Ensure the document matches the screen height cleanly */
+    block-size: 100%;
+
+    /* Smooth scroll for anchor links, respecting user motion settings */
+    @media (prefers-reduced-motion: no-preference) {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* 4. Body defaults & layout baseline */
+  body {
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+
+    /* SVH (Small Viewport Height) prevents layout shifts on mobile web browsers */
+    min-block-size: 100svh;
+  }
+
+  /* 5. Fluid & Responsive Media Defaults */
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+    height: auto; /* Maintains ratio without layout distortion */
+  }
+
+  /* 6. Inherit typography for interactive elements */
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+  }
+
+  /* 7. Better line wrapping for headers to avoid awkward single words */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: break-word;
+    text-wrap: balance; /* Perfectly balances text lines */
+  }
+
+  /* Better wrapping for body copy */
+  p,
+  li {
+    text-wrap: pretty; /* Eliminates widows/single words on a line */
+  }
+
+  /* 8. Root stacking context fix for portals / overlays */
+  #root,
+  #__next {
+    isolation: isolate;
+  }
+}
