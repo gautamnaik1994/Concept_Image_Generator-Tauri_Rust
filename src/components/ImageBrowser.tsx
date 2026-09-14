@@ -6,6 +6,7 @@ import { readDir } from "@tauri-apps/plugin-fs";
 type ImageListProps = {
   onImageSelect: (imagePath: string) => void;
   setFolderPath: (folderPath: string | null) => void;
+  selectedImages?: string[];
 };
 
 type FsEntry = {
@@ -47,7 +48,11 @@ function getFileName(path: string): string {
   return parts[parts.length - 1] || path;
 }
 
-export default function ImageList({ onImageSelect, setFolderPath }: ImageListProps) {
+export default function ImageBrowser({
+  onImageSelect,
+  setFolderPath,
+  selectedImages,
+}: ImageListProps) {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -115,10 +120,7 @@ export default function ImageList({ onImageSelect, setFolderPath }: ImageListPro
 
   return (
     <div className="image-browser">
-      <div className="app-header">
-        <h1>Image Folder Browser</h1>
-        <p>Select any folder from your system and list image files inside it.</p>
-      </div>
+      <h2>Image Browser</h2>
       <section className="folder-actions">
         <button type="button" onClick={handlePickFolder} disabled={isLoading}>
           {isLoading ? "Loading..." : "Choose Folder"}
@@ -150,6 +152,7 @@ export default function ImageList({ onImageSelect, setFolderPath }: ImageListPro
                   name="selected-image"
                   value={imagePath}
                   aria-label={getFileName(imagePath)}
+                  checked={selectedImages?.includes(imagePath) || false}
                   onChange={() => {
                     onImageSelect(imagePath);
                   }}

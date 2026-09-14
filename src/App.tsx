@@ -1,4 +1,4 @@
-import ImageList from "./components/ImageList";
+import ImageBrowser from "./components/ImageBrowser";
 import Navbar from "./components/Navbar";
 import Workspace from "./components/Workspace";
 import "./styles/App.scss";
@@ -22,8 +22,16 @@ export default function App() {
     <main>
       <Navbar />
       <div className="container">
-        <ImageList onImageSelect={handleImageSelect} setFolderPath={setFolderPath} />
-        <Workspace selectedImages={selectedImages} folderPath={folderPath} />
+        <ImageBrowser
+          onImageSelect={handleImageSelect}
+          setFolderPath={setFolderPath}
+          selectedImages={selectedImages}
+        />
+        <Workspace
+          selectedImages={selectedImages}
+          folderPath={folderPath}
+          onImageSelect={handleImageSelect}
+        />
       </div>
     </main>
   );
