@@ -2,11 +2,15 @@ use reqwest::Client;
 use tauri::State;
 
 use base64::Engine;
+use dotenvy_macro::dotenv;
 use std::collections::HashMap;
 use std::path::Path;
 
 const FLUX_PRO_2: &str = "flux_pro_2";
 const FLUX_KONTEXT_PRO: &str = "flux_kontext_pro";
+
+const BASE_URL: &str = dotenv!("BASE_URL");
+const API_KEY: &str = dotenv!("API_KEY");
 
 #[derive(Debug, Clone, Copy)]
 struct ModelConfig {
@@ -33,10 +37,10 @@ async fn generate_image(
     save_path: String,
     model: String,
 ) -> Result<String, String> {
-    let base_url = std::env::var("BASE_URL")
-        .map_err(|_| "BASE_URL environment variable not set".to_string())?;
-    let api_key =
-        std::env::var("API_KEY").map_err(|_| "API_KEY environment variable not set".to_string())?;
+    // let base_url = std::env::var("BASE_URL")
+    //     .map_err(|_| "BASE_URL environment variable not set".to_string())?;
+    // let api_key =
+    //     std::env::var("API_KEY").map_err(|_| "API_KEY environment variable not set".to_string())?;
 
     let request_body = serde_json::json!({
         "prompt": prompt,
@@ -47,9 +51,9 @@ async fn generate_image(
 
     let client = &state.client;
     let response = client
-        .post(format!("{}/mai/v1/images/generations", base_url))
+        .post(format!("{}/mai/v1/images/generations", BASE_URL))
         .header("Content-Type", "application/json")
-        .header("api-key", api_key)
+        .header("api-key", API_KEY)
         .json(&request_body)
         .send()
         .await
@@ -103,10 +107,10 @@ async fn generate_image_edits(
     save_path: String,
     model: String,
 ) -> Result<String, String> {
-    let base_url = std::env::var("BASE_URL")
-        .map_err(|_| "BASE_URL environment variable not set".to_string())?;
-    let api_key =
-        std::env::var("API_KEY").map_err(|_| "API_KEY environment variable not set".to_string())?;
+    // let base_url = std::env::var("BASE_URL")
+    //     .map_err(|_| "BASE_URL environment variable not set".to_string())?;
+    // let api_key =
+    //     std::env::var("API_KEY").map_err(|_| "API_KEY environment variable not set".to_string())?;
 
     if reference_images.is_empty() {
         return Err("At least one reference image is required".to_string());
@@ -157,8 +161,8 @@ async fn generate_image_edits(
 
     let client = &state.client;
     let response = client
-        .post(format!("{}/mai/v1/images/edits", base_url))
-        .header("api-key", api_key)
+        .post(format!("{}/mai/v1/images/edits", BASE_URL))
+        .header("api-key", API_KEY)
         .multipart(form)
         .send()
         .await
@@ -327,10 +331,10 @@ async fn generate_image_flux(
     save_path: String,
     model: String,
 ) -> Result<String, String> {
-    let base_url = std::env::var("BASE_URL")
-        .map_err(|_| "BASE_URL environment variable not set".to_string())?;
-    let api_key =
-        std::env::var("API_KEY").map_err(|_| "API_KEY environment variable not set".to_string())?;
+    // let base_url = std::env::var("BASE_URL")
+    //     .map_err(|_| "BASE_URL environment variable not set".to_string())?;
+    // let api_key =
+    //     std::env::var("API_KEY").map_err(|_| "API_KEY environment variable not set".to_string())?;
 
     let payload = payload_builder(
         &model,
@@ -354,9 +358,9 @@ async fn generate_image_flux(
 
     let client = &state.client;
     let response = client
-        .post(format!("{}{}", base_url, endpoint))
+        .post(format!("{}{}", BASE_URL, endpoint))
         .header("Content-Type", "application/json")
-        .header("api-key", api_key)
+        .header("api-key", API_KEY)
         .json(&payload)
         .send()
         .await
@@ -402,7 +406,7 @@ async fn generate_image_flux(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    dotenv::dotenv().ok();
+    // dotenv::dotenv().ok();
     tauri::Builder::default()
         .manage(AppState {
             client: Client::new(),
