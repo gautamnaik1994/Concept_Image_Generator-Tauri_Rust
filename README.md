@@ -1,6 +1,6 @@
 # Concept Image Generator
 
-![Logo][./public/logo.svg]
+<center><img src="./public/logo.svg" width="200" height="200"></center>
 
 Concept Image Generator is a desktop app built with Tauri, React, and Rust for generating images from text prompts, with optional reference-image editing workflows.
 The goal was to create a app similar to MidJourney or DALL-E, but with a local folder-based workflow and a more flexible model backend.
