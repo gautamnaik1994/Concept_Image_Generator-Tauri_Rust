@@ -7,6 +7,7 @@ import { useState } from "react";
 export default function App() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [folderPath, setFolderPath] = useState<string | null>(null);
+  const [refreshSignal, setRefreshSignal] = useState(Date.now()); // Initialize with current timestamp
 
   const handleImageSelect = (imagePath: string) => {
     setSelectedImages((prevSelectedImages) => {
@@ -26,11 +27,13 @@ export default function App() {
           onImageSelect={handleImageSelect}
           setFolderPath={setFolderPath}
           selectedImages={selectedImages}
+          refreshSignal={refreshSignal}
         />
         <Workspace
           selectedImages={selectedImages}
           folderPath={folderPath}
           onImageSelect={handleImageSelect}
+          onRefreshSignalChange={setRefreshSignal}
         />
       </div>
     </main>

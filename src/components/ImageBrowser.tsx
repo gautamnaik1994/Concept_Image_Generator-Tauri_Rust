@@ -1,5 +1,5 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readDir } from "@tauri-apps/plugin-fs";
 
@@ -7,6 +7,8 @@ type ImageListProps = {
   onImageSelect: (imagePath: string) => void;
   setFolderPath: (folderPath: string | null) => void;
   selectedImages?: string[];
+  refreshSignal?: number; // parent increments to trigger refresh
+  onSelectedImagesChange?: (paths: string[]) => void;
 };
 
 type FsEntry = {
@@ -52,6 +54,8 @@ export default function ImageBrowser({
   onImageSelect,
   setFolderPath,
   selectedImages,
+  refreshSignal,
+  onSelectedImagesChange,
 }: ImageListProps) {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>([]);
@@ -63,33 +67,28 @@ export default function ImageBrowser({
     return `${images.length} image${images.length === 1 ? "" : "s"} found`;
   }, [images.length, selectedFolder]);
 
-  async function handlePickFolder() {
+  async function loadImagesFromFolder(folder: string) {
     setError(null);
-
-    const selected = await open({
-      directory: true,
-      multiple: false,
-      title: "Select an image folder",
-    });
-
-    if (!selected || Array.isArray(selected)) {
-      return;
-    }
-
-    setSelectedFolder(selected);
-    setFolderPath(selected);
     setIsLoading(true);
 
     try {
-      const entries = (await readDir(selected)) as FsEntry[];
+      const entries = (await readDir(folder)) as FsEntry[];
 
       const imagePaths = entries
         .filter((entry) => !entry.isDirectory && !!entry.name)
         .map((entry) => entry.name as string)
         .filter(isImageFile)
-        .map((fileName) => joinPath(selected, fileName));
+        .map((fileName) => joinPath(folder, fileName));
 
       setImages(imagePaths);
+
+      // Keep only selected items that still exist after refresh
+      if (selectedImages && onSelectedImagesChange) {
+        const nextSelected = selectedImages.filter((p) => imagePaths.includes(p));
+        if (nextSelected.length !== selectedImages.length) {
+          onSelectedImagesChange(nextSelected);
+        }
+      }
     } catch (readError) {
       setImages([]);
       const message =
@@ -99,6 +98,25 @@ export default function ImageBrowser({
       setIsLoading(false);
     }
   }
+
+  async function handlePickFolder() {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+      title: "Select an image folder",
+    });
+
+    if (!selected || Array.isArray(selected)) return;
+
+    setSelectedFolder(selected);
+    setFolderPath(selected);
+    await loadImagesFromFolder(selected);
+  }
+
+  useEffect(() => {
+    if (!selectedFolder) return;
+    void loadImagesFromFolder(selectedFolder);
+  }, [refreshSignal, selectedFolder]);
 
   // if (!selectedFolder) {
   //   return (

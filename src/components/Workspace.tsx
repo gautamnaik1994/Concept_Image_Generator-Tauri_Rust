@@ -7,6 +7,7 @@ type WorkspaceProps = {
   selectedImages: string[];
   folderPath: string | null;
   onImageSelect: (imagePath: string) => void;
+  onRefreshSignalChange?: (signal: number) => void;
 };
 
 enum Model {
@@ -15,7 +16,12 @@ enum Model {
   FLUX_2_PRO = "flux_pro_2",
 }
 
-function Workspace({ selectedImages, folderPath, onImageSelect }: WorkspaceProps) {
+function Workspace({
+  selectedImages,
+  folderPath,
+  onImageSelect,
+  onRefreshSignalChange,
+}: WorkspaceProps) {
   const [prompt, setPrompt] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   // const [imgSrc, setImgSrc] = useState<string | null>(null);
@@ -47,6 +53,7 @@ function Workspace({ selectedImages, folderPath, onImageSelect }: WorkspaceProps
     } else {
       console.error("Unsupported model selected:", model);
     }
+    onRefreshSignalChange?.(Date.now()); // Trigger a refresh in the parent component
   }
 
   async function generateImageMAI() {
