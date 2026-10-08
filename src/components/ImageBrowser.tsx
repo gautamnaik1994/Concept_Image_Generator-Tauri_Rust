@@ -2,6 +2,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { useMemo, useState, useEffect } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readDir } from "@tauri-apps/plugin-fs";
+import { load } from "@tauri-apps/plugin-store";
 
 type ImageListProps = {
   onImageSelect: (imagePath: string) => void;
@@ -9,6 +10,7 @@ type ImageListProps = {
   selectedImages?: string[];
   refreshSignal?: number; // parent increments to trigger refresh
   onSelectedImagesChange?: (paths: string[]) => void;
+  savedFolderPath?: string | null;
 };
 
 type FsEntry = {
@@ -56,16 +58,25 @@ export default function ImageBrowser({
   selectedImages,
   refreshSignal,
   onSelectedImagesChange,
+  savedFolderPath,
 }: ImageListProps) {
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  // const store = await load("store.json", { autoSave: false });
+
+  console.log("ImageBrowser props:", {
+    selectedImages,
+    refreshSignal,
+    savedFolderPath,
+  });
+
+  // const [selectedFolder, setSelectedFolder] = useState<string | null>(savedFolderPath ?? null);
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const imageCountText = useMemo(() => {
-    if (!selectedFolder) return "No folder selected";
+    if (!savedFolderPath) return "No folder selected";
     return `${images.length} image${images.length === 1 ? "" : "s"} found`;
-  }, [images.length, selectedFolder]);
+  }, [images.length, savedFolderPath]);
 
   async function loadImagesFromFolder(folder: string) {
     setError(null);
@@ -108,15 +119,28 @@ export default function ImageBrowser({
 
     if (!selected || Array.isArray(selected)) return;
 
-    setSelectedFolder(selected);
+    // setSelectedFolder(selected);
     setFolderPath(selected);
+    const store = await load("store.json", { autoSave: false });
+    await store.set("savedFolderPath", selected);
+    await store.save();
+    console.log("Saved folder path to store:", selected);
     await loadImagesFromFolder(selected);
   }
 
+  // useEffect(() => {
+  //   if (savedFolderPath) {
+  //     console.log("Using saved folder path from props:", savedFolderPath);
+  //     // setSelectedFolder(savedFolderPath);
+  //     void loadImagesFromFolder(savedFolderPath);
+  //   }
+  // }, []);
+
   useEffect(() => {
-    if (!selectedFolder) return;
-    void loadImagesFromFolder(selectedFolder);
-  }, [refreshSignal, selectedFolder]);
+    console.log("refreshSignal or selectedFolder changed:", { refreshSignal, savedFolderPath });
+    if (!savedFolderPath) return;
+    void loadImagesFromFolder(savedFolderPath);
+  }, [refreshSignal, savedFolderPath]);
 
   // if (!selectedFolder) {
   //   return (
@@ -136,6 +160,13 @@ export default function ImageBrowser({
   //   );
   // }
 
+  console.log("Rendering ImageBrowser with state:", {
+    savedFolderPath,
+    images,
+    isLoading,
+    error,
+  });
+
   return (
     <div className="image-browser">
       <h2>Image Browser</h2>
@@ -146,7 +177,7 @@ export default function ImageBrowser({
 
         <div className="folder-meta">
           <p className="folder-path">
-            <strong>Selected folder:</strong> {selectedFolder ?? "No folder selected"}
+            <strong>Selected folder:</strong> {savedFolderPath ?? "No folder selected"}
           </p>
           <p className="image-summary">{imageCountText}</p>
         </div>

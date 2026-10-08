@@ -408,6 +408,7 @@ async fn generate_image_flux(
 pub fn run() {
     // dotenv::dotenv().ok();
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .manage(AppState {
             client: Client::new(),
         })

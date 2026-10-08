@@ -1,8 +1,9 @@
+import { load } from "@tauri-apps/plugin-store";
+import { useState, useEffect } from "react";
 import ImageBrowser from "./components/ImageBrowser";
 import Navbar from "./components/Navbar";
 import Workspace from "./components/Workspace";
 import "./styles/App.scss";
-import { useState } from "react";
 
 export default function App() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
@@ -19,6 +20,23 @@ export default function App() {
     });
   };
 
+  useEffect(() => {
+    const loadStore = async () => {
+      const store = await load("store.json", { autoSave: false });
+      try {
+        const storedPath = await store.get<string>("savedFolderPath");
+        if (storedPath) {
+          console.log("Loaded saved folder path:", storedPath);
+          setFolderPath(storedPath);
+        }
+      } catch (e) {
+        console.warn("Saved path not found");
+      }
+    };
+
+    loadStore();
+  }, []);
+
   return (
     <main>
       <Navbar />
@@ -28,6 +46,7 @@ export default function App() {
           setFolderPath={setFolderPath}
           selectedImages={selectedImages}
           refreshSignal={refreshSignal}
+          savedFolderPath={folderPath}
         />
         <Workspace
           selectedImages={selectedImages}
